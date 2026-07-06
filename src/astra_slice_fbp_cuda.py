@@ -15,14 +15,14 @@ from projection_io import ensure_dir, load_projection_stack
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input-dir", required=True, help="Directory of projection images")
-    parser.add_argument("--output-dir", default="outputs/gpu_slices")
-    parser.add_argument("--start-number", type=int, default=None)
-    parser.add_argument("--stop-number", type=int, default=None)
-    parser.add_argument("--number-step", type=int, default=1)
-    parser.add_argument("--degrees", type=float, default=360.0)
-    parser.add_argument("--slice-start", type=int, default=0)
-    parser.add_argument("--slice-stop", type=int, default=None)
-    parser.add_argument("--epsilon", type=float, default=1e-5)
+    parser.add_argument("--output-dir", required=True)
+    parser.add_argument("--start-number", type=int, required=True)
+    parser.add_argument("--stop-number", type=int, required=True)
+    parser.add_argument("--number-step", type=int, required=True)
+    parser.add_argument("--degrees", type=float, required=True)
+    parser.add_argument("--slice-start", type=int, required=True)
+    parser.add_argument("--slice-stop", type=int, required=True)
+    parser.add_argument("--epsilon", type=float, required=True)
     parser.add_argument("--invert", action="store_true")
     return parser.parse_args()
 
@@ -40,7 +40,7 @@ def main() -> None:
         epsilon=args.epsilon,
     )
     n_angles, n_rows, n_cols = projections.shape
-    slice_stop = n_rows if args.slice_stop is None else min(args.slice_stop, n_rows)
+    slice_stop = min(args.slice_stop, n_rows)
     angles = np.linspace(0, np.deg2rad(args.degrees), n_angles, endpoint=False)
 
     vol_geom = astra.create_vol_geom(n_cols, n_cols)

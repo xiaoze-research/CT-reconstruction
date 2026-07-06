@@ -13,11 +13,11 @@ IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tif", ".tiff"}
 
 def find_projection_files(
     input_dir: str | Path,
-    start_number: int | None = None,
-    stop_number: int | None = None,
-    number_step: int = 1,
+    start_number: int,
+    stop_number: int,
+    number_step: int,
 ) -> list[Path]:
-    """Find projection images, optionally by numeric acquisition sequence."""
+    """Find projection images by numeric acquisition sequence."""
     root = Path(input_dir)
     if not root.exists():
         raise FileNotFoundError(f"Input directory does not exist: {root}")
@@ -26,9 +26,6 @@ def find_projection_files(
         p for p in root.iterdir()
         if p.is_file() and p.suffix.lower() in IMAGE_EXTENSIONS
     )
-    if start_number is None or stop_number is None:
-        return files
-
     selected: list[Path] = []
     for number in range(start_number, stop_number + 1, number_step):
         token = str(number)
@@ -41,12 +38,12 @@ def find_projection_files(
 
 def load_projection_stack(
     input_dir: str | Path,
-    start_number: int | None = None,
-    stop_number: int | None = None,
-    number_step: int = 1,
-    log_transform: bool = True,
-    invert: bool = False,
-    epsilon: float = 1e-5,
+    start_number: int,
+    stop_number: int,
+    number_step: int,
+    log_transform: bool,
+    invert: bool,
+    epsilon: float,
 ) -> tuple[np.ndarray, list[Path]]:
     """Load grayscale projection images as [angle, row, column]."""
     paths = find_projection_files(

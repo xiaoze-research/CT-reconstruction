@@ -27,6 +27,9 @@ def _layer_bounds(
             raise ValueError("--layer-start and --layer-stop are required for range mode")
         return max(0, layer_start), min(image_height, layer_stop)
 
+    if center_window is None:
+        raise ValueError("--center-window is required for center mode")
+
     half = center_window // 2
     center = image_height // 2
     return max(0, center - half), min(image_height, center + half)
@@ -71,21 +74,21 @@ def reconstruct_volume(args: argparse.Namespace) -> np.ndarray:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input-dir", required=True, help="Directory of projection images")
-    parser.add_argument("--output", default="outputs/reconstructed_volume.npy")
-    parser.add_argument("--start-number", type=int, default=None)
-    parser.add_argument("--stop-number", type=int, default=None)
-    parser.add_argument("--number-step", type=int, default=1)
-    parser.add_argument("--degrees", type=float, default=360.0)
-    parser.add_argument("--layer-mode", choices=["center", "range", "all"], default="center")
-    parser.add_argument("--center-window", type=int, default=100)
-    parser.add_argument("--layer-start", type=int, default=None)
-    parser.add_argument("--layer-stop", type=int, default=None)
-    parser.add_argument("--filter-name", default="ramp")
-    parser.add_argument("--epsilon", type=float, default=1e-5)
+    parser.add_argument("--output", required=True)
+    parser.add_argument("--start-number", type=int, required=True)
+    parser.add_argument("--stop-number", type=int, required=True)
+    parser.add_argument("--number-step", type=int, required=True)
+    parser.add_argument("--degrees", type=float, required=True)
+    parser.add_argument("--layer-mode", choices=["center", "range", "all"], required=True)
+    parser.add_argument("--center-window", type=int)
+    parser.add_argument("--layer-start", type=int)
+    parser.add_argument("--layer-stop", type=int)
+    parser.add_argument("--filter-name", required=True)
+    parser.add_argument("--epsilon", type=float, required=True)
     parser.add_argument("--invert", action="store_true")
     parser.add_argument("--no-log-transform", action="store_true")
     parser.add_argument("--show-preview", action="store_true")
-    parser.add_argument("--progress-every", type=int, default=20)
+    parser.add_argument("--progress-every", type=int, required=True)
     return parser.parse_args()
 
 

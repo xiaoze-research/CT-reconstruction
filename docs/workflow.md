@@ -7,6 +7,6 @@
    visualization or downstream DICOM export.
 5. Convert uint8 RAW volumes to DICOM with explicit dimensions and spacing.
 
-The original local workflow used sequence numbers from 129 to 579 with step 2,
-360 degrees, 0.011 mm pixel spacing, 70 mm source-to-object distance, and
-42 mm object-to-detector distance. These are now command-line parameters.
+The repository intentionally does not include dataset-specific scan ranges,
+geometry values, image dimensions, spacing, or DICOM metadata. Set those values
+explicitly from your own acquisition records when running the scripts.

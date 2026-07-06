@@ -34,63 +34,82 @@ from that environment.
 
 ## Example commands
 
-CPU filtered back-projection for the middle 100 layers:
+The scripts do not embed acquisition geometry, scan range, image dimensions, or
+metadata defaults. Replace each placeholder with values from your own dataset.
+
+CPU filtered back-projection:
 
 ```powershell
 python src\ct_fbp_skimage.py `
-  --input-dir data\projections `
-  --output outputs\reconstructed_volume.npy `
-  --start-number 129 `
-  --stop-number 579 `
-  --number-step 2
+  --input-dir <PROJECTION_DIR> `
+  --output <OUTPUT_NPY> `
+  --start-number <FIRST_INDEX> `
+  --stop-number <LAST_INDEX> `
+  --number-step <INDEX_STEP> `
+  --degrees <SCAN_DEGREES> `
+  --layer-mode <LAYER_MODE> `
+  --filter-name <FILTER_NAME> `
+  --epsilon <EPSILON> `
+  --progress-every <PROGRESS_INTERVAL>
 ```
 
 ASTRA CUDA slice-by-slice FBP:
 
 ```powershell
 python src\astra_slice_fbp_cuda.py `
-  --input-dir data\projections `
-  --output-dir outputs\gpu_slices `
-  --start-number 129 `
-  --stop-number 579 `
-  --number-step 2
+  --input-dir <PROJECTION_DIR> `
+  --output-dir <OUTPUT_SLICE_DIR> `
+  --start-number <FIRST_INDEX> `
+  --stop-number <LAST_INDEX> `
+  --number-step <INDEX_STEP> `
+  --degrees <SCAN_DEGREES> `
+  --slice-start <FIRST_SLICE> `
+  --slice-stop <LAST_SLICE> `
+  --epsilon <EPSILON>
 ```
 
 ASTRA CUDA cone-beam FDK:
 
 ```powershell
 python src\astra_cone_beam_fdk_cuda.py `
-  --input-dir data\projections `
-  --output-raw outputs\cone_beam_reconstruction.raw `
-  --start-number 129 `
-  --stop-number 579 `
-  --number-step 2 `
-  --pixel-size-mm 0.011 `
-  --sod-mm 70 `
-  --odd-mm 42 `
-  --vol-cols 800 `
-  --vol-rows 800 `
-  --vol-slices 300
+  --input-dir <PROJECTION_DIR> `
+  --output-raw <OUTPUT_RAW> `
+  --start-number <FIRST_INDEX> `
+  --stop-number <LAST_INDEX> `
+  --number-step <INDEX_STEP> `
+  --degrees <SCAN_DEGREES> `
+  --pixel-size-mm <PIXEL_SIZE_MM> `
+  --sod-mm <SOURCE_TO_OBJECT_DISTANCE_MM> `
+  --odd-mm <OBJECT_TO_DETECTOR_DISTANCE_MM> `
+  --vol-cols <VOLUME_COLUMNS> `
+  --vol-rows <VOLUME_ROWS> `
+  --vol-slices <VOLUME_SLICES> `
+  --epsilon <EPSILON>
 ```
 
-Convert a float32 RAW volume to uint8:
+Convert a RAW volume to uint8:
 
 ```powershell
 python src\raw_to_uint8.py `
-  --input-raw outputs\cone_beam_reconstruction.raw `
-  --output-raw outputs\final_uint8_model.raw `
-  --dims 800,800,300 `
-  --auto-invert
+  --input-raw <INPUT_RAW> `
+  --output-raw <OUTPUT_UINT8_RAW> `
+  --dims <WIDTH,HEIGHT,SLICES> `
+  --source-dtype <SOURCE_DTYPE> `
+  --lower-percentile <LOWER_PERCENTILE> `
+  --upper-percentile <UPPER_PERCENTILE>
 ```
 
 Convert an 8-bit RAW volume to DICOM:
 
 ```powershell
 python src\raw_to_dicom.py `
-  --input-raw outputs\final_uint8_model.raw `
-  --output-dir outputs\dicom_series `
-  --dims 800,800,300 `
-  --spacing 0.011,0.011,0.011
+  --input-raw <INPUT_UINT8_RAW> `
+  --output-dir <OUTPUT_DICOM_DIR> `
+  --dims <WIDTH,HEIGHT,SLICES> `
+  --spacing <SPACING_X,SPACING_Y,SPACING_Z> `
+  --patient-name <DICOM_PATIENT_NAME> `
+  --patient-id <DICOM_PATIENT_ID> `
+  --series-description <DICOM_SERIES_DESCRIPTION>
 ```
 
 ## Data policy

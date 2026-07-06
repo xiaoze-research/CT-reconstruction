@@ -18,13 +18,13 @@ def parse_dims(text: str) -> tuple[int, int, int]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input-raw", required=True)
-    parser.add_argument("--output-raw", default="outputs/final_uint8_model.raw")
-    parser.add_argument("--dims", type=parse_dims, required=True, help="Example: 800,800,800")
-    parser.add_argument("--source-dtype", default="float32")
+    parser.add_argument("--output-raw", required=True)
+    parser.add_argument("--dims", type=parse_dims, required=True, help="Use WIDTH,HEIGHT,SLICES")
+    parser.add_argument("--source-dtype", required=True)
     parser.add_argument("--invert", action="store_true")
     parser.add_argument("--auto-invert", action="store_true")
-    parser.add_argument("--lower-percentile", type=float, default=0.0)
-    parser.add_argument("--upper-percentile", type=float, default=100.0)
+    parser.add_argument("--lower-percentile", type=float, required=True)
+    parser.add_argument("--upper-percentile", type=float, required=True)
     return parser.parse_args()
 
 

@@ -20,12 +20,12 @@ def parse_triplet(text: str, cast):
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input-raw", required=True)
-    parser.add_argument("--output-dir", default="outputs/dicom_series")
+    parser.add_argument("--output-dir", required=True)
     parser.add_argument("--dims", type=lambda s: parse_triplet(s, int), required=True)
-    parser.add_argument("--spacing", type=lambda s: parse_triplet(s, float), default=(0.011, 0.011, 0.011))
-    parser.add_argument("--patient-name", default="Industrial Object")
-    parser.add_argument("--patient-id", default="Case_001")
-    parser.add_argument("--series-description", default="CT Reconstruction")
+    parser.add_argument("--spacing", type=lambda s: parse_triplet(s, float), required=True)
+    parser.add_argument("--patient-name", required=True)
+    parser.add_argument("--patient-id", required=True)
+    parser.add_argument("--series-description", required=True)
     return parser.parse_args()
 
 

@@ -1,0 +1,172 @@
+#!/usr/bin/env bash
+# =============================================================================
+# Code Ocean reproducible-run entry point for the CT reconstruction capsule.
+#
+# Behaviour
+#   auto (default): use ASTRA cone-beam FDK on GPU when an NVIDIA GPU is
+#                   detected, otherwise fall back to a CPU scikit-image FBP of
+#                   the central slices so the run always completes.
+#   Environment overrides:
+#     RECON_MODE=fdk_gpu | fbp_cpu | auto
+#     VOL_SIZE=<voxels per edge>      FILTER_TYPE=<astra filter name>
+#     CENTER_OFFSET_PX=<pixels>       EXPORT_DICOM=1 (also write DICOM series)
+#
+# Paths
+#   Inputs  : $DATA_DIR/projections   (Code Ocean mounts the capsule data at /data)
+#   Outputs : $RESULTS_DIR            (Code Ocean collects results from /results)
+#
+# The concrete acquisition parameters below match the published CC BY 4.0 demo
+# dataset (see data/README.md and code/docs/demo_data.md). They are kept out of
+# the reusable library code on purpose; this launcher is the single place that
+# pins them for the demo.
+# =============================================================================
+set -euo pipefail
+
+HERE="$(cd "$(dirname "$0")" && pwd)"
+
+# Resolve data directory. An explicit DATA_DIR is respected as-is; otherwise
+# prefer the Code Ocean mount (/data), then a local checkout (../data).
+if [ -z "${DATA_DIR:-}" ]; then
+  if [ -d /data ]; then
+    DATA_DIR=/data
+  else
+    DATA_DIR="$HERE/../data"
+  fi
+fi
+
+# Resolve results directory the same way, creating it if needed.
+if [ -z "${RESULTS_DIR:-}" ]; then
+  if [ -d /results ]; then
+    RESULTS_DIR=/results
+  else
+    RESULTS_DIR="$HERE/../results"
+  fi
+fi
+mkdir -p "$RESULTS_DIR"
+
+# Locate the projections folder: directly under DATA_DIR, or one level down
+# (a Code Ocean data asset mounts as /data/<asset-name>/projections).
+if [ -d "$DATA_DIR/projections" ]; then
+  PROJECTIONS="$DATA_DIR/projections"
+else
+  PROJECTIONS="$(find "$DATA_DIR" -mindepth 2 -maxdepth 2 -type d -name projections 2>/dev/null | head -1 || true)"
+fi
+if [ -z "$PROJECTIONS" ] || [ ! -d "$PROJECTIONS" ]; then
+  echo "[run] ERROR: no 'projections' folder found under DATA_DIR=$DATA_DIR" >&2
+  echo "[run] Attach the demo-data-v1 projections as a Code Ocean data asset," >&2
+  echo "[run] or set DATA_DIR to a folder that contains a 'projections' subfolder." >&2
+  exit 1
+fi
+
+export PYTHONUNBUFFERED=1
+export MPLBACKEND=Agg
+
+# Published demo acquisition / reconstruction parameters. The defaults below
+# reproduce the manuscript Methods: 226 projections over 360 degrees, log
+# transform, +30 px detector-centre correction, ASTRA FDK_CUDA with a Hann
+# filter, 800^3 voxels at 11 um. Override via environment variables if needed.
+START_NUMBER=129
+STOP_NUMBER=579
+NUMBER_STEP=2
+DEGREES=360
+PIXEL_SIZE_MM=0.011
+SOD_MM=70
+ODD_MM=42
+EPSILON=0.00390625
+VOL="${VOL_SIZE:-800}"
+FILTER_TYPE="${FILTER_TYPE:-hann}"
+CENTER_OFFSET_PX="${CENTER_OFFSET_PX:-30}"
+
+# Decide reconstruction mode. In auto mode, probe the actual capability
+# (ASTRA sees a usable CUDA device) rather than just the driver: a present
+# nvidia-smi does not guarantee that ASTRA's CUDA algorithms will run.
+MODE="${RECON_MODE:-auto}"
+if [ "$MODE" = "auto" ]; then
+  if python -c "import astra, sys; sys.exit(0 if astra.use_cuda() else 1)" >/dev/null 2>&1; then
+    MODE="fdk_gpu"
+  else
+    MODE="fbp_cpu"
+  fi
+fi
+case "$MODE" in
+  fdk_gpu|fbp_cpu) ;;
+  *)
+    echo "[run] ERROR: RECON_MODE must be auto, fdk_gpu, or fbp_cpu (got '$MODE')" >&2
+    exit 1
+    ;;
+esac
+
+echo "[run] mode=$MODE"
+echo "[run] data=$DATA_DIR"
+echo "[run] results=$RESULTS_DIR"
+echo "[run] projections=$(ls "$PROJECTIONS" | wc -l) files"
+
+cd "$HERE"
+
+if [ "$MODE" = "fdk_gpu" ]; then
+  echo "[run] ASTRA cone-beam FDK (GPU) -> ${VOL}x${VOL}x${VOL} float32 volume"
+  echo "[run] filter=$FILTER_TYPE centre-offset=${CENTER_OFFSET_PX}px"
+  python -u src/astra_cone_beam_fdk_cuda.py \
+    --input-dir   "$PROJECTIONS" \
+    --output-raw  "$RESULTS_DIR/demo_fdk_${VOL}.raw" \
+    --start-number "$START_NUMBER" \
+    --stop-number  "$STOP_NUMBER" \
+    --number-step  "$NUMBER_STEP" \
+    --degrees      "$DEGREES" \
+    --pixel-size-mm "$PIXEL_SIZE_MM" \
+    --sod-mm       "$SOD_MM" \
+    --odd-mm       "$ODD_MM" \
+    --vol-cols     "$VOL" \
+    --vol-rows     "$VOL" \
+    --vol-slices   "$VOL" \
+    --epsilon      "$EPSILON" \
+    --filter-type  "$FILTER_TYPE" \
+    --center-offset-px "$CENTER_OFFSET_PX"
+  python -u make_preview.py \
+    --mode "$MODE" \
+    --raw  "$RESULTS_DIR/demo_fdk_${VOL}.raw" \
+    --dims "${VOL},${VOL},${VOL}" \
+    --out-prefix "$RESULTS_DIR/demo_fdk_${VOL}" \
+    --results "$RESULTS_DIR"
+
+  if [ "${EXPORT_DICOM:-0}" = "1" ]; then
+    echo "[run] Exporting DICOM series (uint8 window 0.5-99.5 percentile)"
+    python -u src/raw_to_uint8.py \
+      --input-raw  "$RESULTS_DIR/demo_fdk_${VOL}.raw" \
+      --output-raw "$RESULTS_DIR/demo_fdk_${VOL}_uint8.raw" \
+      --dims "${VOL},${VOL},${VOL}" \
+      --source-dtype float32 \
+      --lower-percentile 0.5 \
+      --upper-percentile 99.5
+    python -u src/raw_to_dicom.py \
+      --input-raw "$RESULTS_DIR/demo_fdk_${VOL}_uint8.raw" \
+      --output-dir "$RESULTS_DIR/dicom" \
+      --dims "${VOL},${VOL},${VOL}" \
+      --spacing "${PIXEL_SIZE_MM},${PIXEL_SIZE_MM},${PIXEL_SIZE_MM}" \
+      --patient-name "DEMO" \
+      --patient-id "DEMO-001" \
+      --series-description "CT reconstruction demo (FDK, ${FILTER_TYPE})"
+  fi
+else
+  echo "[run] CPU scikit-image FBP (parallel-beam approximation) of central slices"
+  python -u src/ct_fbp_skimage.py \
+    --input-dir   "$PROJECTIONS" \
+    --output      "$RESULTS_DIR/demo_fbp_center.npy" \
+    --start-number "$START_NUMBER" \
+    --stop-number  "$STOP_NUMBER" \
+    --number-step  "$NUMBER_STEP" \
+    --degrees      "$DEGREES" \
+    --layer-mode   center \
+    --center-window 16 \
+    --filter-name  ramp \
+    --epsilon      "$EPSILON" \
+    --progress-every 4
+  python -u make_preview.py \
+    --mode "$MODE" \
+    --npy  "$RESULTS_DIR/demo_fbp_center.npy" \
+    --out-prefix "$RESULTS_DIR/demo_fbp_center" \
+    --results "$RESULTS_DIR"
+fi
+
+echo "[run] done. Outputs written to $RESULTS_DIR:"
+ls -la "$RESULTS_DIR"

@@ -1,0 +1,8 @@
+# The Code Ocean entry point must stay LF and executable.
+code/run text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.yml text eol=lf
+*.jpeg -text
+*.csv text eol=lf

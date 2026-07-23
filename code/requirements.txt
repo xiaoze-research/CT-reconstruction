@@ -1,0 +1,11 @@
+# NOTE: the authoritative environment for the Code Ocean capsule is
+# environment/Dockerfile (conda; astra-toolbox 2.5.0 + libastra cuda_12_0).
+# This file is a convenience for local pip installs only. pip's astra-toolbox
+# wheels start at 2.2; FDK filter configuration requires >= 2.3.0.
+numpy
+pillow
+scikit-image
+matplotlib
+SimpleITK
+scipy
+astra-toolbox>=2.3.0

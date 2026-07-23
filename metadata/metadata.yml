@@ -1,0 +1,27 @@
+metadata_version: 1
+name: "CT Reconstruction: Cone-Beam FDK and Filtered Back-Projection"
+description: >
+  Reference implementation of the CT reconstruction pipeline for the
+  xiaoze-research/CT-reconstruction project. The capsule reconstructs a
+  cone-beam micro-CT projection sequence (226 projections, 2048 x 2048 pixels,
+  360 degrees, log-transformed to absorbance with a fixed detector-centre
+  correction) into an 800 x 800 x 800 volume at an isotropic 11 um voxel size
+  using ASTRA FDK_CUDA with a Hann filter on GPU, with a CPU scikit-image
+  filtered back-projection fallback so the reproducible run completes on
+  machines without a GPU. Also includes utilities for slice-by-slice ASTRA FBP,
+  float-to-uint8 RAW conversion, and DICOM export with SimpleITK. The demo
+  projection data is distributed under CC BY 4.0.
+tags:
+  - computed-tomography
+  - image-reconstruction
+  - cone-beam-ct
+  - FDK
+  - filtered-back-projection
+  - ASTRA
+  - micro-CT
+# The capsule is published pseudonymously as xiaoze-research during peer
+# review; the full author list and contact can be added after acceptance.
+authors:
+  - name: "xiaoze-research"
+# Code is released under the repository LICENSE (see code/LICENSE, all rights
+# reserved). The bundled demo projection data is CC BY 4.0 (see data/LICENSE-DATA.md).

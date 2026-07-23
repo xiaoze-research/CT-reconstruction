@@ -1,6 +1,0 @@
-numpy
-pillow
-scikit-image
-matplotlib
-SimpleITK
-astra-toolbox

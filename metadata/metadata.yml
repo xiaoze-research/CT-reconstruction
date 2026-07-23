@@ -23,5 +23,5 @@ tags:
 # review; the full author list and contact can be added after acceptance.
 authors:
   - name: "xiaoze-research"
-# Code is released under the repository LICENSE (see code/LICENSE, all rights
-# reserved). The bundled demo projection data is CC BY 4.0 (see data/LICENSE-DATA.md).
+# Code is released under the MIT License (see LICENSE and code/LICENSE). The
+# bundled demo projection data is CC BY 4.0 (see data/LICENSE-DATA.md).

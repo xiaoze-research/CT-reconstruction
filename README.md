@@ -42,6 +42,7 @@ Environment-variable overrides:
 ## Capsule layout
 
 ```
+LICENSE                    # MIT License for the software
 code/                      # reconstruction source and the run entry point
   run                      # Code Ocean reproducible-run entry point
   make_preview.py          # renders result PNGs + RESULTS.md (capsule glue)
@@ -144,9 +145,9 @@ Before (or right after) importing into Code Ocean:
 1. **Authorship is intentionally pseudonymous** (`xiaoze-research`) to keep the
    capsule anonymous during peer review; add the real author list and
    corresponding contact in `metadata/metadata.yml` after acceptance.
-2. **`code/LICENSE` names no copyright holder yet** — also deliberate for
-   anonymous review; add the holder (person/institution) after acceptance so
-   the all-rights-reserved license becomes actionable.
+2. **The MIT copyright holder is pseudonymous** (`xiaoze-research`) for
+   anonymous review. If the holder changes after acceptance, update the
+   copyright notice in both `LICENSE` and `code/LICENSE`.
 3. **Make the entry point executable** — Windows filesystems do not store the
    Unix executable bit. After import, either mark `code/run` as the "file to
    run" in the Code Ocean UI, or run `chmod +x /code/run` once in the capsule
@@ -156,8 +157,15 @@ Before (or right after) importing into Code Ocean:
 
 ## Licensing and provenance
 
-- **Code**: see [`code/LICENSE`](code/LICENSE) (all rights reserved).
-- **Demo data**: CC BY 4.0, see [`data/LICENSE-DATA.md`](data/LICENSE-DATA.md).
+The CT reconstruction software is released under the
+[MIT License](LICENSE), an
+[Open Source Initiative (OSI)-approved](https://opensource.org/license/mit)
+open-source license. A copy of the license is provided in the repository's
+`LICENSE` file.
+
+The bundled demonstration dataset is licensed separately under the Creative
+Commons Attribution 4.0 International (CC BY 4.0) License; see
+[`data/LICENSE-DATA.md`](data/LICENSE-DATA.md).
 
 The reusable library and its documentation deliberately omit dataset-specific
 acquisition parameters; those live with the demo dataset (`data/`), in

@@ -1,9 +1,10 @@
 # CT Reconstruction Algorithms
 
 This repository contains cleaned CT reconstruction scripts derived from a local
-experimental workflow. The upload-ready version keeps algorithm code only and
-does not include raw scans, DICOM series, reconstructed volumes, literature
-PDF/CAJ files, archives, or generated TIFF slices.
+experimental workflow. Git history keeps algorithm code and documentation only;
+the complete projection demo is distributed separately as a GitHub Release.
+Raw volumes, DICOM series, literature PDF/CAJ files, archives, and generated
+TIFF slices are not committed to the repository.
 
 ## Repository contents
 
@@ -16,6 +17,16 @@ PDF/CAJ files, archives, or generated TIFF slices.
 - `data/` - place local input data here; files are ignored by Git.
 - `outputs/` - generated outputs; files are ignored by Git.
 - `docs/` - workflow and provenance notes.
+
+## Demo dataset
+
+The complete 226-projection demo sequence is available from the
+[`demo-data-v1` release](https://github.com/xiaoze-research/CT-reconstruction/releases/tag/demo-data-v1).
+It contains the original 2048 x 2048 JPEG projections, a per-file SHA-256
+manifest, acquisition/reconstruction parameters, and a CC BY 4.0 data license.
+
+See [`docs/demo_data.md`](docs/demo_data.md) for the direct download link,
+archive checksum, known limitations, and a ready-to-run FDK command.
 
 ## Install
 
@@ -114,6 +125,8 @@ python src\raw_to_dicom.py `
 
 ## Data policy
 
-Do not commit experimental projection images, DICOM files, RAW volumes, vendor
-archives, literature PDFs/CAJ files, or manuscript drafts. Share large datasets
-through a data repository or release asset after checking ownership and privacy.
+Do not commit projection images, DICOM files, RAW volumes, vendor archives,
+literature PDFs/CAJ files, or manuscript drafts to Git history. The reviewed
+demo sequence is published only through the `demo-data-v1` release after
+ownership and metadata checks. Share any additional dataset through a data
+repository or release asset after checking ownership, privacy, and licensing.
